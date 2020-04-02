@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class R6SUser extends Model
+class R6SStats extends Model
 {
     //
     public static function get($name)

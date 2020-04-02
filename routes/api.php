@@ -2,7 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\R6SUser;
+use App\Http\Controllers;
+use App\R6SStats;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,21 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/refresh/user/{name}', function ($name) {
-  $getUser = file_get_contents("http://localhost:8001/getUser.php?name=".$name."&platform=uplay&appcode=r6s_api");
-  $row = json_decode($getUser, true);
-  $profile_id = array_keys($row['players'])[0];
-  $user = $row['players'][$profile_id];
-  $keys = array_keys($user);
-
-  $user['rank_image'] = $user['rankInfo']['image'];
-  $user['rank_name']  = $user['rankInfo']['name'];
-  $user['update_time'] = time();
-  unset($user['rankInfo']);
-  R6SUser::set($user);
-  return R6SUser::get($name);
-});
-
-Route::get('/get/user/{name}', function ($name) {
-  return R6SUser::get($name);
-});
+Route::get('/refresh/user/{name}', 'R6SStatsController@refreshR6SUser');
+Route::get('/get/user/{name}','R6SStatsController@getR6SUser');
+Route::get('/get/operators/{name}','R6SStatsController@getOperators');
+Route::get('/get/stats/{name}','R6SStatsController@getStats');
