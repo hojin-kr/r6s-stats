@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="1082355a-b59e-49c6-bd68-b010ddd16793" name="r6s" url="http://ec2-54-180-8-46.ap-northeast-2.compute.amazonaws.com">
+        <fileTransfer host="ec2-54-180-8-46.ap-northeast-2.compute.amazonaws.com" port="22" privateKey="$USER_HOME$/Downloads/r6s_stats-2.pem" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
