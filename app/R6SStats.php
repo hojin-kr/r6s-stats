@@ -83,7 +83,7 @@ class R6SStats extends Model
             return $e->getMessage() . "\n";
         }
         foreach($result['Items'] as $value) {
-            $res[] = $marshaler->unmarshalItem($value);
+            $res[] = $marshaler->unmarshalItem($value)['info'];
         }
         return $res;
     }
