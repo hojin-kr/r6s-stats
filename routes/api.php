@@ -19,6 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/get/profile/{name}','R6SStatsController@getR6SProfile');
-Route::get('/get/rank/{name}','R6SStatsController@getR6SRank');
-Route::get('/get/operators/{name}','R6SStatsController@getR6SOperators');
+Route::get('/get/profile/{profile_id}','R6SStatsController@getR6SProfile');
+Route::get('/get/id/{name}','R6SStatsController@getProfileId');
+Route::get('/get/rank/{profile_id}','R6SStatsController@getR6SRankInfo');
+Route::get('/get/operators/{profile_id}','R6SStatsController@getR6SOperators');

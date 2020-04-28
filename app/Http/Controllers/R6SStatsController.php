@@ -10,48 +10,57 @@ use Aws\DynamoDb\Marshaler;
 
 class R6SStatsController extends Controller
 {
-    public static function getR6SProfile($name)
+    public static function getR6SProfile($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
         $data = static::r6SJsonParser($raw);
 
         $res['nickname'] = $data['players']['nickname'];
         $res['mmr'] = $data['players']['mmr'];
         $res['rank'] = $data['players']['rankInfo']['name'];
         $res['level'] = $data['players']['level'];
-        $res['profileImg'] = 'https://trello-attachments.s3.amazonaws.com/5e84abc437ab1e40d7b6b462/5e9dc21b5e41ba8e1ecaf361/6babcd9830f72220071bd8b4a0bedf7e/image.png';
-        $res['mostPick'] = 'caveira,jakal';
+        $res['profileImg'] = 'https://ubisoft-avatars.akamaized.net/'.$data['profile_id'].'/default_256_256.png';
         return $res;
 
     }
 
-    public static function getR6SRank($name)
+    public static function getR6SRankInfo($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
         $data = static::r6SJsonParser($raw);
 
         $res['rank'] = $data['players']['rankInfo']['name'];
         $res['mmr'] = $data['players']['mmr'];
+        $res['max_mmr'] = $data['players']['max_mmr'];
         $res['wins'] = $data['players']['wins'];
         $res['looses'] = $data['players']['losses'];
         $res['kills'] = $data['players']['kills'];
         $res['death'] = $data['players']['deaths'];
+        $res['season'] = $data['players']['season'];
         return $res;
     }
 
-    public static function getR6SOperators($name)
+    public static function getR6SOperators($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getOperators.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
         $data = static::r6SJsonParser($raw);
         return $data['players'];
     }
 
-    public static function refreshR6SUser($name)
+    public static function refreshR6SUser($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
         $user = static::r6SJsonParser($raw);
         R6SStats::set($user);
         return R6SStats::get($user);
+    }
+
+    public static function getProfileId($name) {
+        $raw = file_get_contents("http://localhost:8001/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $row = json_decode($raw, true);
+        $profile_id  = array_keys($row)[0];
+        $result['profile_id'] = $profile_id;
+        return $result;
     }
 
     public static function getStats($profile_id, $start = 0)
