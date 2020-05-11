@@ -27,6 +27,11 @@
 <body>
 <div class="container">
 <h1>api</h1>
+<div>
+<h5>특이사항</h5>
+<small>한번 조회하면 300초간 캐싱 적용되어있음</small>
+<hr>
+</div>
     <div class="api"> 
         <p class="url">/get/id/</p>
         <p>닉네임으로 profile_id 조회</p>
@@ -75,19 +80,63 @@
         <p>response</p>
         <pre><div class="result"></div></pre>
     </div>
+    <div class="api"> 
+        <p class="url">/get/rank/list/</p>
+        <p>유저 랭크 리스트 조회</p>
+        <small>DB에 저장된 유저의 랭크 리스트</small><br>
+        <small>Timestamp를 기준으로 원하는 단위로 (주, 월) 조회가능</small><br>
+        <small>시즌별로 날짜를 스태틱하게 정의하고 날짜를 기준으로 시즌을 구분하여 가져올 수 있을 것</small><br>
+        <small>Tip. 현재 Timestamp : <?php echo time();?> </small><br>
+        <small>Tip. 단순하게 start는 0 or 음수 end는 현재로 파라미터 전달하면 전체 데이터 조회 </small>
+        <div class="form-inline">
+            <div class="form-group">
+                <input class="form-control param" type="text" placeholder="profile_id">
+                <input class="form-control param-2" type="text" placeholder="start timestamp">
+                <input class="form-control param-3" type="text" placeholder="end timestamp">
+            </div>
+            <button type="button" class="btn btn-success req">요청</button>
+        </div>
+        <p>response</p>
+        <pre><div class="result"></div></pre>
+    </div>
+    <div class="api"> 
+        <p class="url">/get/operators/list/</p>
+        <p>유저 오퍼레이터 리스트 조회</p>
+        <small>DB에 저장된 유저의 오퍼레이터 리스트</small><br>
+        <small>Timestamp를 기준으로 원하는 단위로 (주, 월) 조회가능</small><br>
+        <small>시즌별로 날짜를 스태틱하게 정의하고 날짜를 기준으로 시즌을 구분하여 가져올 수 있을 것</small><br>
+        <small>Tip. 현재 Timestamp : <?php echo time();?> </small><br>
+        <small>Tip. 단순하게 start는 0 or 음수 end는 현재로 파라미터 전달하면 전체 데이터 조회 </small>
+        <div class="form-inline">
+            <div class="form-group">
+                <input class="form-control param" type="text" placeholder="profile_id">
+                <input class="form-control param-2" type="text" placeholder="start timestamp">
+                <input class="form-control param-3" type="text" placeholder="end timestamp">
+            </div>
+            <button type="button" class="btn btn-success req">요청</button>
+        </div>
+        <p>response</p>
+        <pre><div class="result"></div></pre>
+    </div>
 </div>
 
     <script>
     let BASE = 'http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/api';
+    // let BASE = 'localhost:8080/api';
 
-    $('.req').on('click', (event)=>{
+    $('.req').on('click', (event)=>{ 
         let dom = $(event.target).parent().parent();
-        let url = dom.find('.url').text() + dom.find('.param').val();
+        let param = new Array();
+        param[0] = dom.find('.param').val() + '/';
+        param[1] = ((dom.find('.param-2').val() !== undefined) ? dom.find('.param-2').val() + '/' : '');
+        param[2] = ((dom.find('.param-3').val() !== undefined) ? dom.find('.param-3').val() + '/': '');
+        let url = dom.find('.url').text() + param[0] + param[1] + param[2];
         console.log(url);
         request(url, dom);
     })
 
     function request(url, dom) {
+        dom.find('.result').html('');
         $.ajax({url: BASE + url, success: function(result){
         let test = JSON.stringify(result);
         dom.find('.result').html(test);

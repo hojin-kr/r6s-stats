@@ -3,30 +3,48 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Rank;
+use App\Operators;
 use App\R6SStats;
 use Aws\Sdk;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
+use Illuminate\Support\Facades\Redis;
 
 class R6SStatsController extends Controller
 {
+    const REDIS_EXPIRE = 300;
+
     public static function getR6SProfile($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+        $redis = Redis::get('profile:'.$profile_id);
+        if ($redis !== null) {
+            $raw = $redis;
+        } else {
+            $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+            Redis::set('profile:'.$profile_id, $raw, 'EX', static::REDIS_EXPIRE);
+        }
         $data = static::r6SJsonParser($raw);
-
         $res['nickname'] = $data['players']['nickname'];
         $res['mmr'] = $data['players']['mmr'];
         $res['rank'] = $data['players']['rankInfo']['name'];
         $res['level'] = $data['players']['level'];
         $res['profileImg'] = 'https://ubisoft-avatars.akamaized.net/'.$data['profile_id'].'/default_256_256.png';
+        
         return $res;
-
     }
 
     public static function getR6SRankInfo($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+        $redis = Redis::get('rank:'.$profile_id);
+        if ($redis !== null) {
+            $raw = $redis;
+        } else {
+            $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+            Redis::set('rank:'.$profile_id, $raw, 'EX', static::REDIS_EXPIRE);
+            Rank::setRank($profile_id, $raw);
+        }
+        
         $data = static::r6SJsonParser($raw);
 
         $res['rank'] = $data['players']['rankInfo']['name'];
@@ -42,62 +60,41 @@ class R6SStatsController extends Controller
 
     public static function getR6SOperators($profile_id)
     {
-        $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+        $redis = Redis::get('operators:'.$profile_id);
+        if ($redis !== null) {
+            $raw = $redis;
+        } else {
+            $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
+            Redis::set('operators:'.$profile_id, $raw, 'EX', static::REDIS_EXPIRE);
+            Operators::setOperators($profile_id, $raw);
+        }
         $data = static::r6SJsonParser($raw);
         return $data['players'];
     }
 
-    public static function refreshR6SUser($profile_id)
-    {
-        $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
-        $user = static::r6SJsonParser($raw);
-        R6SStats::set($user);
-        return R6SStats::get($user);
-    }
-
     public static function getProfileId($name) {
-        $raw = file_get_contents("http://localhost:8001/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+        $redis = Redis::get('profileNameToId:'.$name);
+        if ($redis !== null) {
+            $raw = $redis;
+        } else {
+            $raw = file_get_contents("http://localhost:8001/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
+            Redis::set('profileNameToId:'.$name, $raw, 'EX', static::REDIS_EXPIRE);
+        }
         $row = json_decode($raw, true);
         $profile_id  = array_keys($row)[0];
         $result['profile_id'] = $profile_id;
         return $result;
     }
 
-    public static function getStats($profile_id, $start = 0)
-    {
-        return R6SStats::dynamoTimeQuery('stats', $profile_id, $start);
+
+    // DB에 저장된 유저의 랭크 리스트
+    public static function getRankList($profile_id, $start, $end) {
+        return Rank::getRankList($profile_id, $start, $end);
     }
-
-    public static function refreshStats($profile_id)
-    {
-        $raw = file_get_contents("http://localhost:8001/getStats.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
-        $stats = static::r6SJsonParser($raw);
-        R6SStats::dynamoPut('stats', $stats['players'], $stats['profile_id']);
-        return $stats['players'];
-    }
-
-    public static function getOperators($profile_id, $start = 0)
-    {
-        return R6SStats::dynamoTimeQuery('operators', $profile_id, $start);
-    }
-
-    public static function refreshOperators($profile_id)
-    {
-        $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $profile_id . "&platform=uplay&appcode=r6s_api");
-        $operators = static::r6SJsonParser($raw);
-        R6SStats::dynamoPut('operators', $operators['players'], $operators['profile_id']);
-        return $operators['players'];
-    }
-
-    public static function bestOperator($profile_id)
-    {
-        $op = ['capitao', 'castle', 'vigil', 'fuze', 'echo', 'blackbeard'];
-
-        $operators = R6SStats::dynamoTimeQuery('operators', $profile_id, 0);
-        foreach($operators[0] as $operator) {
-            $test[] = $operator;
-        }
-        return $test;
+    
+    // DB에 저장된 유저의 오퍼레이터 리스트
+    public static function getOperatorsList($profile_id, $start, $end) {
+        return Operators::getOperatorsList($profile_id, $start, $end);
     }
 
     private static function r6SJsonParser($json)
