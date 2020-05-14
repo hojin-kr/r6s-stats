@@ -93,6 +93,7 @@ class R6SStatsController extends Controller
         static::activeUser($profile_id);
         static::addSchedule($profile_id, 'seasonAllRenew');
         Log::info('getProfileId:'.$name.':'.$profile_id);
+        static::lineNotify('profile_id 조회 '.$name.':'.$profile_id);
         return $result;
     }
 
@@ -136,7 +137,7 @@ class R6SStatsController extends Controller
         'White Noise', 'Chimera', 'Para Bellum', 'Grim Sky', 'Wind Bastion', 'Burnt Horizon', 'Phantom Sight'
         ,'Ember Rise', 'Shifting Tides', 'Void Edge'];
 
-        $redis = Redis::get('seasonAll:'.$profile_id);
+        $redis = Redis::get('seasonAllRenew:'.$profile_id);
         if ($redis !== null) {
             return true;
         } else {
@@ -157,6 +158,7 @@ class R6SStatsController extends Controller
                     $seasonEach[$key + 1]['season_name'] = $value;
                 }
                 Redis::set('seasonAllRenew:'.$profile_id, json_encode($seasonEach), 'EX', static::REDIS_EXPIRE_LONG);
+                static::lineNotify($profile_id.'전체시즌 정보 갱신 완료');
             } catch(Exception $e) {
                 Log::error('seasonAllRenew Error'.$e);
                 return false;
@@ -176,5 +178,11 @@ class R6SStatsController extends Controller
     public static function addSchedule($profile_id, $job)
     {
         Redis::rpush('schedule:'.$job, $profile_id);
+    }
+
+    public static function lineNotify($message) : string
+    {
+        exec("curl -X POST -H 'Authorization: Bearer SZgzswoQMXFzfCditIaNHxHJvGFk6OE2qpoI1NenaUL' -F 'message=".$message."' https://notify-api.line.me/api/notify");
+        return true;
     }
 }

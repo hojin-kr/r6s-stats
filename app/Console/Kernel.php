@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
             $len = Redis::llen('schedule:seasonAllRenew');
             if ($len > 0) {
                 Log::info('now schedule:seasonAllRenew len:'.$len);
+                R6SStatsController::lineNotify('schedule:seasonAllRenew len:'.$len);
             }
             $list = [];
             for($i = 0; $i < $len; $i++) {
@@ -50,6 +51,7 @@ class Kernel extends ConsoleKernel
             $len = Redis::llen('active');
             if ($len > 0) {
                 Log::info('today active user:'.$len);
+                R6SStatsController::lineNotify('오늘의 활성 유저 수 '.$len);
             }
         })->daily();
     }
