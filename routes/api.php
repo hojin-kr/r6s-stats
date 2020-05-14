@@ -25,3 +25,4 @@ Route::get('/get/rank/{profile_id}','R6SStatsController@getR6SRankInfo');
 Route::get('/get/operators/{profile_id}','R6SStatsController@getR6SOperators');
 Route::get('/get/rank/list/{profile_id}/{start_timestamp}/{end_timestamp}','R6SStatsController@getRankList');
 Route::get('/get/operators/list/{profile_id}/{start_timestamp}/{end_timestamp}','R6SStatsController@getOperatorsList');
+Route::get('/get/season/all/{profile_id}','R6SStatsController@getSeasonAll');

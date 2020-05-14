@@ -118,6 +118,20 @@
         <p>response</p>
         <pre><div class="result"></div></pre>
     </div>
+    <div class="api"> 
+        <p class="url">/get/season/all/</p>
+        <p>유저 전체시즌 정보</p>
+        <small>/get/id/를 호출하면 백그라운드에서 전체 시즌 정보를 갱신</small><br>
+        <small>정보가 없으면 0 반환</small><br>
+        <div class="form-inline">
+            <div class="form-group">
+                <input class="form-control param" type="text" placeholder="profile_id">
+            </div>
+            <button type="button" class="btn btn-success req">요청</button>
+        </div>
+        <p>response</p>
+        <pre><div class="result"></div></pre>
+    </div>
 </div>
 
     <script>
