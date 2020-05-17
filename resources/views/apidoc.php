@@ -29,7 +29,7 @@
 <h1>api</h1>
 <div>
 <h5>특이사항</h5>
-<small>한번 조회하면 300초간 캐싱 적용되어있음</small>
+<small>""</small>
 <hr>
 </div>
     <div class="api"> 
@@ -136,7 +136,7 @@
 
     <script>
     let BASE = 'http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/api';
-    // let BASE = 'localhost:8080/api';
+    // let BASE = '/api';
 
     $('.req').on('click', (event)=>{ 
         let dom = $(event.target).parent().parent();

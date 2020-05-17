@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LineNoti extends Model
 {
-    const TEST = '8RhZ6HEb1Te5gMbbJI13elbfA9ZfS5w5gBIso78ce8l';
-    const SYSTEM = 'SZgzswoQMXFzfCditIaNHxHJvGFk6OE2qpoI1NenaUL';
+    const TEST = 'TthV2zUj0paRTFpDho2bvCmAgWqun3b61rSWt9e6R5q'; //테스트
+    const SYSTEM = 'SZgzswoQMXFzfCditIaNHxHJvGFk6OE2qpoI1NenaUL'; //r6s
 
     public static function send($message, $type = 0) : bool
     {

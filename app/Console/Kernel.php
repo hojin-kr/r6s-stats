@@ -7,6 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\R6SStatsController;
 use Illuminate\Support\Facades\Redis;
+use App\LineNoti;
 
 class Kernel extends ConsoleKernel
 {
@@ -18,6 +19,9 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         //
     ];
+
+    //높은 스케쥴링 횟수
+    const HIGHLEN = 100;
 
     /**
      * Define the application's command schedule.
@@ -31,27 +35,28 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $len = Redis::llen('schedule:seasonAllRenew');
             if ($len > 0) {
-                Log::info('now schedule:seasonAllRenew len:'.$len);
-                R6SStatsController::lineNotify('schedule:seasonAllRenew len:'.$len);
-            }
-            $list = [];
-            for($i = 0; $i < $len; $i++) {
-                array_push($list, Redis::lpop('schedule:seasonAllRenew'));
-            }
-            foreach ($list as $value) {
-                if (!empty($value)) {   
-                    R6SStatsController::seasonAllRenew($value);
+                if ($len > static::HIGHLEN) {
+                    LineNoti::send('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
                 }
+                $list = [];
+                for($i = 0; $i < $len; $i++) {
+                    array_push($list, Redis::lpop('schedule:seasonAllRenew'));
+                }   
+                foreach ($list as $value) {
+                    if (!empty($value)) {   
+                        R6SStatsController::seasonAllRenew($value);
+                    }
+                }
+                Log::info('schedule:seasonAllRenew:'.$len);
             }
-        })->everyMinute();
-        // ->runInBackground();
+        })->everyMinute()->runInBackground();;
 
-        //active 유저 백그라운드 처리
+        //데일리 누적 활성 사용자
         $schedule->call(function () {
             $len = Redis::llen('active');
             if ($len > 0) {
                 Log::info('today active user:'.$len);
-                R6SStatsController::lineNotify('오늘의 활성 유저 수 '.$len);
+                LineNoti::send('누적 활성 사용자 : '.$len);
             }
         })->daily();
     }

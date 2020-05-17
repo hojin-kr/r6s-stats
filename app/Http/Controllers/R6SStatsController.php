@@ -7,6 +7,7 @@ use App\Rank;
 use App\Operators;
 use App\R6SStats;
 use Aws\Sdk;
+use App\LineNoti;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
 use Illuminate\Support\Facades\Redis;
@@ -93,7 +94,6 @@ class R6SStatsController extends Controller
         static::activeUser($profile_id);
         static::addSchedule($profile_id, 'seasonAllRenew');
         Log::info('getProfileId:'.$name.':'.$profile_id);
-        static::lineNotify('profile_id 조회 '.$name.':'.$profile_id);
         return $result;
     }
 
@@ -158,9 +158,10 @@ class R6SStatsController extends Controller
                     $seasonEach[$key + 1]['season_name'] = $value;
                 }
                 Redis::set('seasonAllRenew:'.$profile_id, json_encode($seasonEach), 'EX', static::REDIS_EXPIRE_LONG);
-                static::lineNotify($profile_id.'전체시즌 정보 갱신 완료');
+                LineNoti::send($profile_id.':전체시즌 정보 갱신 완료', 1);
             } catch(Exception $e) {
                 Log::error('seasonAllRenew Error'.$e);
+                LineNoti::send($profile_id.':전체시즌 정보 갱신 에러', 1);
                 return false;
             }
         }
@@ -170,19 +171,20 @@ class R6SStatsController extends Controller
     //활성유저 관리
     public static function activeUser($profile_id) 
     {
-        Redis::rpush('active',$profile_id);
-        Redis::expire('active', static::REDIS_EXPIRE_ACTIVE_USER); 
+        $active = Redis::lrange('active', 0, -1);
+        if (!in_array($profile_id, $active)) {
+            Redis::rpush('active',$profile_id);
+            Redis::expire('active', static::REDIS_EXPIRE_ACTIVE_USER); 
+            LineNoti::send('활성 유저 추가 activeUser:'.$profile_id, 1);
+            return true;
+        }
+        return false;
     }
 
     //백그라운드 갱신이 필요한 유저
     public static function addSchedule($profile_id, $job)
     {
         Redis::rpush('schedule:'.$job, $profile_id);
-    }
-
-    public static function lineNotify($message) : string
-    {
-        exec("curl -X POST -H 'Authorization: Bearer SZgzswoQMXFzfCditIaNHxHJvGFk6OE2qpoI1NenaUL' -F 'message=".$message."' https://notify-api.line.me/api/notify");
-        return true;
+        LineNoti::send('전체시즌갱신 스케쥴 추가:schedule:'.$job.':'.$profile_id.':'.Redis::llen('schedule:seasonAllRenew'), 1);
     }
 }
