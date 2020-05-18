@@ -19,10 +19,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/get/profile/{profile_id}','R6SStatsController@getR6SProfile');
-Route::get('/get/id/{name}','R6SStatsController@getProfileId');
-Route::get('/get/rank/{profile_id}','R6SStatsController@getR6SRankInfo');
-Route::get('/get/operators/{profile_id}','R6SStatsController@getR6SOperators');
-Route::get('/get/rank/list/{profile_id}/{start_timestamp}/{end_timestamp}','R6SStatsController@getRankList');
-Route::get('/get/operators/list/{profile_id}/{start_timestamp}/{end_timestamp}','R6SStatsController@getOperatorsList');
-Route::get('/get/season/all/{profile_id}','R6SStatsController@getSeasonAll');
+Route::get('/get/profile/{profile_id}','profile@getProfile');
+Route::get('/get/id/{name}','profile@getId');
+Route::get('/get/rank/{profile_id}','rank@getRank');
+Route::get('/get/operators/{profile_id}','operator@getOperstors');
+Route::get('/get/rank/list/{profile_id}/{start_timestamp}/{end_timestamp}','rank@getRankList');
+Route::get('/get/operators/list/{profile_id}/{start_timestamp}/{end_timestamp}','operator@getOperatorsList');
+Route::get('/get/season/all/{profile_id}','rank@getSeasonAll');

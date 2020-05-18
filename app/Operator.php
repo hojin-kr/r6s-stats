@@ -7,7 +7,7 @@ use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
 use Aws\Sdk;
 
-class Operators
+class Operator
 {
     const TABLE = 'operator';
 
