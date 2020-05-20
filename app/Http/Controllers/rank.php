@@ -6,6 +6,7 @@ use App\Rank as RankModel;
 use App\LineNoti;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class rank extends Controller
 {
@@ -16,12 +17,13 @@ class rank extends Controller
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $id . "&platform=uplay&appcode=r6s_api");
-            Redis::set('rank:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
-            RankModel::setRank($id, $raw);
+            $raw = file_get_contents(static::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE);
         }
         
         $data = $this->r6SJsonParser($raw);
+        if (isset($data['players']['error'])){
+            abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
+        }
 
         $ret['rank'] = $data['players']['rankInfo']['name'];
         $ret['mmr'] = $data['players']['mmr'];
@@ -31,6 +33,8 @@ class rank extends Controller
         $ret['kills'] = $data['players']['kills'];
         $ret['death'] = $data['players']['deaths'];
         $ret['season'] = $data['players']['season'];
+        Redis::set('rank:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
+        RankModel::setRank($id, $raw);
         Log::info('getR6SRankInfo:'.$id);
         return $ret;
     }
@@ -67,7 +71,7 @@ class rank extends Controller
             try {
                 foreach ($season as $key => $value) {
                     Log::info('seasonAllRenew:'.$id.':'.$value);
-                    $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $id . "&platform=uplay&appcode=r6s_api&season=".($key + 1));
+                    $raw = Http::get(static::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE + "&season=".($key + 1));
                     $data = static::r6SJsonParser($raw);
                     $seasonEach[$key + 1]['rank'] = $data['players']['rankInfo']['name'];
                     $seasonEach[$key + 1]['mmr'] = $data['players']['mmr'];

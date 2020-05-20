@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Operator as OperatorModel;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class operator extends Controller
 {
@@ -15,11 +16,14 @@ class operator extends Controller
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $id . "&platform=uplay&appcode=r6s_api");
-            Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
-            OperatorModel::setOperators($id, $raw);
+            $raw = Http::get(static::R6SAPIHOST."/getOperators.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE);
         }
         $data = $this->r6SJsonParser($raw);
+        if (isset($data['players']['error'])){
+            abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
+        }
+        Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
+        OperatorModel::setOperators($id, $raw);
         Log::info('getR6SOperators:'.$id);
         return $data['players'];
     }

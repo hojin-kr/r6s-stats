@@ -18,6 +18,8 @@ class Controller extends BaseController
     const REDIS_EXPIRE = 3600; // 1시간
     const REDIS_EXPIRE_LONG = 7776000; // 90일
     const REDIS_EXPIRE_ACTIVE_USER = 2592000; // 30일
+    const R6SAPIHOST = 'http://localhost:8001';
+    const APPCODE = 'r6s_api';
 
     public static function r6SJsonParser($json)
     {
