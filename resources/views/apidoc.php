@@ -135,8 +135,7 @@
 </div>
 
     <script>
-    let BASE = 'http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/api';
-    // let BASE = '/api';
+    let BASE = '/api';        
 
     $('.req').on('click', (event)=>{ 
         let dom = $(event.target).parent().parent();
