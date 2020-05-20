@@ -46,7 +46,9 @@ class Controller extends BaseController
     //백그라운드 갱신이 필요한 유저
     public static function addSchedule($id, $job)
     {
-        Redis::rpush('schedule:'.$job, $id);
-        LineNoti::send('전체시즌갱신 스케쥴 추가:schedule:'.$job.':'.$id.':'.Redis::llen('schedule:seasonAllRenew'), 1);
+        $jobs = Redis::lrange('schedule:'.$job, 0, -1);
+        if (!in_array($id, $jobs)) {
+            Redis::rpush('schedule:'.$job, $id);
+        }
     }
 }

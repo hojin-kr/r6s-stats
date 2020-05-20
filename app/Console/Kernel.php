@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\rank;
+use App\Http\Controllers\operator;
 use Illuminate\Support\Facades\Redis;
 use App\LineNoti;
 
@@ -34,7 +35,6 @@ class Kernel extends ConsoleKernel
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {
             $len = Redis::llen('schedule:seasonAllRenew');
-            Log::info('schedule:seasonAllRenew'.$len);
             if ($len > 0) {
                 if ($len > static::HIGHLEN) {
                     Log::info('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
@@ -53,13 +53,16 @@ class Kernel extends ConsoleKernel
             }
         })->everyMinute()->runInBackground();;
 
-        //데일리 누적 활성 사용자
-        $schedule->call(function () {
+        //활성 유저 데이터 자동 갱신
+        $schedule->call(function (){
+            $active = Redis::lrange('active', 0, -1);
             $len = Redis::llen('active');
-            if ($len > 0) {
-                Log::info('today active user:'.$len);
-                LineNoti::send('누적 활성 사용자 : '.$len);
+            foreach ($active as $user) {
+                operator::getOperstors($user);
+                rank::getRank($user);
             }
+            Log::info('active user auto refresh');
+            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')');
         })->daily();
     }
 

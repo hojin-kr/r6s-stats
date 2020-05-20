@@ -10,19 +10,20 @@ use Illuminate\Support\Facades\Http;
 class operator extends Controller
 {
     //
-    public function getOperstors($id) : array
+    public static function getOperstors($id) : array
     {
         $redis = Redis::get('operators:'.$id);
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = Http::get(static::R6SAPIHOST."/getOperators.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE);
+            $raw = file_get_contents(Controller::R6SAPIHOST."/getOperators.php?id=" . $id . "&platform=uplay&appcode=".Controller::APPCODE);
         }
-        $data = $this->r6SJsonParser($raw);
+        $data = Controller::r6SJsonParser($raw);
         if (isset($data['players']['error'])){
+            Log::error('getOperstors:일치하는 유저 찾을 수 없음');
             abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
         }
-        Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
+        Redis::set('operators:'.$id, $raw, 'EX', Controller::REDIS_EXPIRE);
         OperatorModel::setOperators($id, $raw);
         Log::info('getR6SOperators:'.$id);
         return $data['players'];
