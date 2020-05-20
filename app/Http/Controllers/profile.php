@@ -15,7 +15,7 @@ class profile extends Controller
             $raw = $redis;
         } else {
             $raw = file_get_contents("http://localhost:8001/getUser.php?id=" . $id . "&platform=uplay&appcode=r6s_api");
-            Redis::set('profile:'.$id, $raw, 'EX', $this->REDIS_EXPIRE);
+            Redis::set('profile:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
         }
         $data = $this->r6SJsonParser($raw);
         $ret['nickname'] = $data['players']['nickname'];
@@ -34,7 +34,7 @@ class profile extends Controller
             $raw = $redis;
         } else {
             $raw = file_get_contents("http://localhost:8001/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=r6s_api");
-            Redis::set('profileNameToId:'.$name, $raw, 'EX', $this->REDIS_EXPIRE);
+            Redis::set('profileNameToId:'.$name, $raw, 'EX', static::REDIS_EXPIRE);
         }
         $row = json_decode($raw, true);
         $id  = array_keys($row)[0];

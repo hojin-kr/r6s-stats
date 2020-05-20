@@ -5,7 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\R6SStatsController;
+use App\Http\Controllers\rank;
 use Illuminate\Support\Facades\Redis;
 use App\LineNoti;
 
@@ -34,8 +34,10 @@ class Kernel extends ConsoleKernel
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {
             $len = Redis::llen('schedule:seasonAllRenew');
+            Log::info('schedule:seasonAllRenew'.$len);
             if ($len > 0) {
                 if ($len > static::HIGHLEN) {
+                    Log::info('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
                     LineNoti::send('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
                 }
                 $list = [];
@@ -44,7 +46,7 @@ class Kernel extends ConsoleKernel
                 }   
                 foreach ($list as $value) {
                     if (!empty($value)) {   
-                        R6SStatsController::seasonAllRenew($value);
+                        rank::seasonAllRenew($value);
                     }
                 }
                 Log::info('schedule:seasonAllRenew:'.$len);

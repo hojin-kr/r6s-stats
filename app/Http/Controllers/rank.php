@@ -79,7 +79,7 @@ class rank extends Controller
                     $seasonEach[$key + 1]['season'] = $data['players']['season'];
                     $seasonEach[$key + 1]['season_name'] = $value;
                 }
-                Redis::set('seasonAllRenew:'.$id, json_encode($seasonEach), 'EX', $this->REDIS_EXPIRE_LONG);
+                Redis::set('seasonAllRenew:'.$id, json_encode($seasonEach), 'EX', static::REDIS_EXPIRE_LONG);
                 LineNoti::send($id.':전체시즌 정보 갱신 완료', 1);
             } catch(Exception $e) {
                 Log::error('seasonAllRenew Error'.$e);

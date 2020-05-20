@@ -16,7 +16,7 @@ class operator extends Controller
             $raw = $redis;
         } else {
             $raw = file_get_contents("http://localhost:8001/getOperators.php?id=" . $id . "&platform=uplay&appcode=r6s_api");
-            Redis::set('operators:'.$id, $raw, 'EX', $this->REDIS_EXPIRE);
+            Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
             OperatorModel::setOperators($id, $raw);
         }
         $data = $this->r6SJsonParser($raw);
