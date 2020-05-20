@@ -64,7 +64,7 @@ class rank extends Controller
         'White Noise', 'Chimera', 'Para Bellum', 'Grim Sky', 'Wind Bastion', 'Burnt Horizon', 'Phantom Sight'
         ,'Ember Rise', 'Shifting Tides', 'Void Edge'];
 
-        $redis = Redis::get('seasonAllRenew:'.$id);
+        $redis = Redis::get('seasonAll:'.$id);
         if ($redis !== null) {
             return true;
         } else {
@@ -87,7 +87,7 @@ class rank extends Controller
                 $seasonEach[$key + 1]['season'] = $data['players']['season'];
                 $seasonEach[$key + 1]['season_name'] = $value;
             }
-            Redis::set('seasonAllRenew:'.$id, json_encode($seasonEach), 'EX', Controller::REDIS_EXPIRE_LONG);
+            Redis::set('seasonAll:'.$id, json_encode($seasonEach), 'EX', Controller::REDIS_EXPIRE_LONG);
             LineNoti::send($id.':전체시즌 정보 갱신 완료', 1);
             }
         return true;
