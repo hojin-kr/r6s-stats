@@ -32,14 +32,22 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        //활성 유저 데이터 자동 갱신
+        $schedule->call(function (){
+            $active = Redis::lrange('active', 0, -1);
+            $len = Redis::llen('active');
+            foreach ($active as $user) {
+                operator::getOperstors($user);
+                rank::getRank($user);
+            }
+            Log::info('active user auto refresh', $active);
+            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')');
+        })->daily();
+
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {
             $len = Redis::llen('schedule:seasonAllRenew');
             if ($len > 0) {
-                if ($len > static::HIGHLEN) {
-                    Log::info('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
-                    LineNoti::send('높은 스케쥴링 감지 schedule:seasonAllRenew:'.$len);
-                }
                 $list = [];
                 for($i = 0; $i < $len; $i++) {
                     array_push($list, Redis::lpop('schedule:seasonAllRenew'));
@@ -49,21 +57,8 @@ class Kernel extends ConsoleKernel
                         rank::seasonAllRenew($value);
                     }
                 }
-                Log::info('schedule:seasonAllRenew:'.$len);
             }
-        })->everyMinute()->runInBackground();;
-
-        //활성 유저 데이터 자동 갱신
-        $schedule->call(function (){
-            $active = Redis::lrange('active', 0, -1);
-            $len = Redis::llen('active');
-            foreach ($active as $user) {
-                operator::getOperstors($user);
-                rank::getRank($user);
-            }
-            Log::info('active user auto refresh');
-            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')');
-        })->daily();
+        })->everyMinute();
     }
 
     /**

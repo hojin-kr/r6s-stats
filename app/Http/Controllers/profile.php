@@ -16,11 +16,11 @@ class profile extends Controller
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = file_get_contents(Controller::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".Controller::APPCODE);
+            $raw = file_get_contents(static::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE);
         }
-        $data = Controller::r6SJsonParser($raw);
+        $data = static::r6SJsonParser($raw);
         if (isset($data['players']['error'])){
-            Log::error('getProfile:일치하는 유저 찾을 수 없음');
+            Log::error('getProfile:일치하는 유저 찾을 수 없음', $raw);
             abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
         }
         $ret['nickname'] = $data['players']['nickname'];
@@ -28,8 +28,8 @@ class profile extends Controller
         $ret['rank'] = $data['players']['rankInfo']['name'];
         $ret['level'] = $data['players']['level'];
         $ret['profileImg'] = 'https://ubisoft-avatars.akamaized.net/'.$data['profile_id'].'/default_256_256.png';
-        Redis::set('profile:'.$id, $raw, 'EX', Controller::REDIS_EXPIRE);
-        Log::info('getR6SProfile:'.$id);
+        Redis::set('profile:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
+        Log::info('Get profile' , ['raw' => $raw]);
         return $ret;
     }
 
@@ -39,19 +39,19 @@ class profile extends Controller
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = file_get_contents(Controller::R6SAPIHOST."/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=".Controller::APPCODE);
+            $raw = file_get_contents(static::R6SAPIHOST."/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=".static::APPCODE);
         }
         $row = json_decode($raw, true);
         $id  = array_keys($row)[0];
         if ($name === $id) {
-            Log::error('getId:일치하는 유저 찾을 수 없음');
+            Log::error('get Id 일치하는 유저 찾을 수 없음',['raw' => $raw]);
             abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
         }
         $ret['profile_id'] = $id;
-        Controller::activeUser($id);
-        Controller::addSchedule($id, 'seasonAllRenew');
-        Redis::set('profileId:'.$name, $raw, 'EX', Controller::REDIS_EXPIRE);
-        Log::info('getProfileId:'.$name.':'.$id);
+        static::activeUser($id);
+        static::addSchedule($id, 'seasonAllRenew');
+        Redis::set('profileId:'.$name, $raw, 'EX', static::REDIS_EXPIRE);
+        Log::info('Get Id', ['name' => $name, 'id' => $id]);
         return $ret;
     }
 }

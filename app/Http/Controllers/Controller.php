@@ -24,9 +24,12 @@ class Controller extends BaseController
     public static function r6SJsonParser($json)
     {
         $row = json_decode($json, true);
+        if (isset($row['players']['error'])) {
+            Log::error('json parser', $row);
+        }
         $profile_id  = array_keys($row['players'])[0];
         $result['players'] = $row['players'][$profile_id];
-        $result['profile_id'] = $profile_id;
+        $result['profile_id'][] = $profile_id;
         return $result;
     }
     

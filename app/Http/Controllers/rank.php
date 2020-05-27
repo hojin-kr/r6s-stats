@@ -17,12 +17,12 @@ class rank extends Controller
         if ($redis !== null) {
             $raw = $redis;
         } else {
-            $raw = file_get_contents(Controller::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".Controller::APPCODE);
+            $raw = file_get_contents(static::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE);
         }
         
-        $data = Controller::r6SJsonParser($raw);
+        $data = static::r6SJsonParser($raw);
         if (isset($data['players']['error'])){
-            Log::error('getRank:일치하는 유저 찾을 수 없음');
+            Log::error('getRank 일치하는 유저 찾을 수 없음',['raw' => $raw]);
             abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
         }
 
@@ -34,9 +34,9 @@ class rank extends Controller
         $ret['kills'] = $data['players']['kills'];
         $ret['death'] = $data['players']['deaths'];
         $ret['season'] = $data['players']['season'];
-        Redis::set('rank:'.$id, $raw, 'EX', Controller::REDIS_EXPIRE);
+        Redis::set('rank:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
         RankModel::setRank($id, $raw);
-        Log::info('getR6SRankInfo:'.$id);
+        Log::info('getR6SRankInfo',['id' => $id]);
         return $ret;
     }
 
@@ -53,7 +53,7 @@ class rank extends Controller
     // DB에 저장된 유저의 랭크 리스트
     public static function getRankList($id, $start, $end) 
     {
-        Log::info('getRankList:'.$id.':'.$start.':'.$end);
+        Log::info('Get RankList', ['id'=>$id, 'start'=>$start, 'end'=>$end]);
         return RankModel::getRankList($id, $start, $end);
     }
 
@@ -71,10 +71,10 @@ class rank extends Controller
             $seasonEach = [];
             foreach ($season as $key => $value) {
                 Log::info('seasonAllRenew:'.$id.':'.$value);
-                $raw = file_get_contents(Controller::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".Controller::APPCODE."&season=".($key + 1));
-                $data = Controller::r6SJsonParser($raw);
+                $raw = file_get_contents(static::R6SAPIHOST."/getUser.php?id=" . $id . "&platform=uplay&appcode=".static::APPCODE."&season=".($key + 1));
+                $data = static::r6SJsonParser($raw);
                 if (isset($data['players']['error'])){
-                    Log::error('seasonAllRenew Error'.$e);
+                    Log::error('seasonAllRenew Error', 1);
                     LineNoti::send($id.':전체시즌 정보 갱신 에러', 1);
                 }
                 $seasonEach[$key + 1]['rank'] = $data['players']['rankInfo']['name'];
@@ -87,7 +87,7 @@ class rank extends Controller
                 $seasonEach[$key + 1]['season'] = $data['players']['season'];
                 $seasonEach[$key + 1]['season_name'] = $value;
             }
-            Redis::set('seasonAll:'.$id, json_encode($seasonEach), 'EX', Controller::REDIS_EXPIRE_LONG);
+            Redis::set('seasonAll:'.$id, json_encode($seasonEach), 'EX', static::REDIS_EXPIRE_LONG);
             LineNoti::send($id.':전체시즌 정보 갱신 완료', 1);
             }
         return true;
