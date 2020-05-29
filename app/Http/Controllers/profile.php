@@ -27,7 +27,7 @@ class profile extends Controller
         $ret['mmr'] = $data['players']['mmr'];
         $ret['rank'] = $data['players']['rankInfo']['name'];
         $ret['level'] = $data['players']['level'];
-        $ret['profileImg'] = 'https://ubisoft-avatars.akamaized.net/'.$data['profile_id'].'/default_256_256.png';
+        $ret['profileImg'] = 'https://ubisoft-avatars.akamaized.net/'.$id.'/default_256_256.png';
         Redis::set('profile:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
         Log::info('Get profile' , ['raw' => $raw]);
         return $ret;

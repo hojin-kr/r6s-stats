@@ -23,9 +23,13 @@ class operator extends Controller
             Log::error('getOperstors 일치하는 유저 찾을 수 없음', $raw);
             abort(400, '1:일치하는 유저를 찾을 수 없습니다.');
         }
-        Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
-        // todo 이전 정보와 비교해서 같은면 저장안함
-        OperatorModel::setOperators($id, $raw);
+        Redis::set('operators:'.$id, $raw, 'EX', static::REDIS_EXPIRE_SHORT);
+        // 직전과 같으면 다이나모에 저장하지 않음
+        $past = Redis::get('operators:past:'.$id);
+        if ($past != $raw) {
+            OperatorModel::setOperators($id, $raw);
+        }
+        Redis::set('operators:past:'.$id, $raw);
         Log::info('Get operators' ,['id' => $id]);
         return static::operatorAlign($data);
     }

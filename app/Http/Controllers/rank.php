@@ -34,8 +34,12 @@ class rank extends Controller
         $ret['kills'] = $data['players']['kills'];
         $ret['death'] = $data['players']['deaths'];
         $ret['season'] = $data['players']['season'];
-        Redis::set('rank:'.$id, $raw, 'EX', static::REDIS_EXPIRE);
-        RankModel::setRank($id, $raw);
+        Redis::set('rank:'.$id, $raw, 'EX', static::REDIS_EXPIRE_SHORT);
+        $past = Redis::get('rank:past:'.$id);
+        if ($past != $raw) {
+            RankModel::setRank($id, $raw);
+        }
+        Redis::set('rank:past:'.$id, $raw);
         Log::info('getR6SRankInfo',['id' => $id]);
         return $ret;
     }
