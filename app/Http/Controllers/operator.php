@@ -34,7 +34,12 @@ class operator extends Controller
     public static function getOperatorsList($id, $start, $end) 
     {
         Log::info('Get OperatorsList', ['id'=>$id, 'start'=>$start, 'end'=>$end]);
-        return OperatorModel::getOperatorsList($id, $start, $end);
+        $operators = OperatorModel::getOperatorsList($id, $start, $end);
+        foreach ($operators as &$operator) {
+            $data = static::r6SJsonParser($operator['data']);
+            $operator = static::operatorAlign($data);
+        }
+        return $operators;
     }
 
     //형태를 변경해서 반환
@@ -45,28 +50,31 @@ class operator extends Controller
             if ($operator == 'profile_id') {
                 break;
             }
-            $ret[$operator]['operator'] = $operator;
+            $op['operator'] = $operator;
             foreach ($values as $index => $value) {
                 switch(explode('_', $index)[1]) {
                     case 'roundlost':
-                        $ret[$operator]['roundlost'] = $value;
+                        $op['roundlost'] = $value;
                     break;
                     case 'death':
-                        $ret[$operator]['death'] = $value;
+                        $op['death'] = $value;
                     break;
                     case 'roundwon':
-                        $ret[$operator]['roundwon'] = $value;
+                        $op['roundwon'] = $value;
                     break;
                     case 'kills':
-                        $ret[$operator]['kills'] = $value;
+                        $op['kills'] = $value;
                     break;
                     case 'timeplayed':
-                        $ret[$operator]['timeplayed'] = $value;
+                        $op['timeplayed'] = $value;
                     break;
                     default:
-                        $ret[$operator]['operators_skill'][$index] = $value;
+                        $skill['name'] = $index;
+                        $skill['value'] = $value;   
+                        $op['skill'][] = $skill;                 
                 }
             }
+            $ret[] = $op;
         }
         return $ret;
     }

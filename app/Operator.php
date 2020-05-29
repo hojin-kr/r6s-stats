@@ -75,6 +75,7 @@ class Operator
             return $e->getMessage() . "\n";
         }
         foreach($result['Items'] as $value) {
+            $test = $value;
             $res[] = $marshaler->unmarshalItem($value)['info'];
         }
         if (empty($res)) {
