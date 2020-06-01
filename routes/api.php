@@ -20,7 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('/get/profile/{profile_id}','profile@getProfile');
-Route::get('/get/id/{name}','profile@getId');
+Route::post('/get/id','profile@getId');
 Route::get('/get/rank/{profile_id}','rank@getRank');
 Route::get('/get/operators/{profile_id}','operator@getOperstors');
 Route::get('/get/rank/list/{profile_id}/{start_timestamp}/{end_timestamp}','rank@getRankList');

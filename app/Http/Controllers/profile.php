@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Http\Request;
 
 class profile extends Controller
 {
@@ -33,14 +34,18 @@ class profile extends Controller
         return $ret;
     }
 
-    public function getId($name) : array 
+    public function getId(Request $request) : array 
     {
-        $redis = Redis::get('profileId:'.$name);
+        ['name'=>$name, 'cache'=>$cache] = $request;
+        $redis = null;
+        if ($cache) {
+            $redis = Redis::get('profileId:'.$name);
+        } 
         if ($redis !== null) {
             $raw = $redis;
         } else {
             $raw = file_get_contents(static::R6SAPIHOST."/getSmallUser.php?name=" . $name . "&platform=uplay&appcode=".static::APPCODE);
-        }
+        }        
         $row = json_decode($raw, true);
         $id  = array_keys($row)[0];
         if ($name === $id) {
@@ -50,7 +55,7 @@ class profile extends Controller
         $ret['profile_id'] = $id;
         static::activeUser($id);
         static::addSchedule($id, 'seasonAllRenew');
-        Redis::set('profileId:'.$name, $raw, 'EX', static::REDIS_EXPIRE);
+        Redis::set('profileId:'.$name, $raw, 'EX', static::REDIS_EXPIRE_ACTIVE_USER); // 30일
         Log::info('Get Id', ['name' => $name, 'id' => $id]);
         return $ret;
     }

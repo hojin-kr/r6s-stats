@@ -41,8 +41,8 @@ class Kernel extends ConsoleKernel
                 rank::getRank($user);
             }
             Log::info('active user auto refresh', $active);
-            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')');
-        })->daily();
+            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')', 1);
+        })->hourly();
 
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {
