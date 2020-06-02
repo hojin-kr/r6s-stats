@@ -40,6 +40,13 @@ class rank extends Controller
             RankModel::setRank($id, $raw);
         }
         Redis::set('rank:past:'.$id, $raw);
+        //랭킹
+        $nickname = $data['players']['nickname'];
+        if ($ret['kills'] != 0) {
+            $kd = $ret['kills']/$ret['death'];
+            Redis::zadd('rank:kd', $kd, $nickname);
+        }
+        Redis::zadd('rank:mmr', $ret['mmr'], $nickname);
         Log::info('getR6SRankInfo',['id' => $id]);
         return $ret;
     }

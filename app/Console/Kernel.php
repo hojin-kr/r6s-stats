@@ -44,6 +44,14 @@ class Kernel extends ConsoleKernel
             LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')', 1);
         })->hourly();
 
+        //현재 상위 순위
+        $schedule->call(function (){
+            $rankMMR = Redis::zrevrange('rank:mmr', 0, 4);
+            $rankKD =  Redis::zrevrange('rank:kd', 0, 4);
+            LineNoti::send('TOP5 MMR '.implode(', ', $rankMMR), 1);
+            LineNoti::send('TOP5 K/D '.implode(', ', $rankKD), 1);
+        })->hourly();
+
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {
             $len = Redis::llen('schedule:seasonAllRenew');

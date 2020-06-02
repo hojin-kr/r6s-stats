@@ -6,18 +6,14 @@ use Illuminate\Support\Facades\Redis;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
 use Aws\Sdk;
+use App\DynamoDb;
 
 class Operator
 {
     const TABLE = 'operator';
 
     public static function setOperators($id, $data) {
-        $sdk = new Sdk([
-            'region'   => 'ap-northeast-2',
-            'version'  => 'latest'
-        ]);
-        $db = $sdk->createDynamoDB();
-
+        $db = DynamoDb::init();
         $marshaler = new Marshaler();
         
         $rank['timestamp'] = time();
@@ -44,12 +40,7 @@ class Operator
     }
 
     public static function getOperatorsList($id, $start, $end) {
-        $sdk = new Sdk([
-            'region' => 'ap-northeast-2',
-            'version' => 'latest'
-        ]);
-
-        $dynamodb = $sdk->createDynamoDb();
+        $dynamodb = DynamoDb::init();
         $marshaler = new Marshaler();
 
         $eav = $marshaler->marshalJson('

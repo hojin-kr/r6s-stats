@@ -6,18 +6,14 @@ use Illuminate\Support\Facades\Redis;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
 use Aws\Sdk;
+use App\DynamoDb;
 
 class Rank
 {
     const TABLE = 'rank';
 
     public static function setRank($id, $data) {
-        $sdk = new Sdk([
-            'region'   => 'ap-northeast-2',
-            'version'  => 'latest'
-        ]);
-        $db = $sdk->createDynamoDB();
-
+        $db = $dynamodb = DynamoDb::init();
         $marshaler = new Marshaler();
         
         $rank['timestamp'] = time();
@@ -44,12 +40,7 @@ class Rank
     }
 
     public static function getRankList($id, $start, $end) {
-        $sdk = new Sdk([
-            'region' => 'ap-northeast-2',
-            'version' => 'latest'
-        ]);
-
-        $dynamodb = $sdk->createDynamoDb();
+        $dynamodb = $dynamodb = DynamoDb::init();
         $marshaler = new Marshaler();
 
         $eav = $marshaler->marshalJson('
