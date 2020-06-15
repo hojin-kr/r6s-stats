@@ -6,12 +6,14 @@ use App\Operator as OperatorModel;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class operator extends Controller
 {
     //
-    public static function getOperstors($id) : array
+    public static function getOperstors(Request $request) : array
     {
+        ['key'=>$id] = $request;
         $redis = Redis::get('operators:'.$id);
         if ($redis !== null) {
             $raw = $redis;
@@ -35,8 +37,9 @@ class operator extends Controller
     }
 
     // DB에 저장된 유저의 오퍼레이터 리스트
-    public static function getOperatorsList($id, $start, $end) 
+    public static function getOperatorsList(Request $request) 
     {
+        ['key'=>$id, 'start_timestamp'=>$start, 'end_timestamp'=>$end] = $request;
         Log::info('Get OperatorsList', ['id'=>$id, 'start'=>$start, 'end'=>$end]);
         $operators = OperatorModel::getOperatorsList($id, $start, $end);
         foreach ($operators as &$operator) {

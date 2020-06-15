@@ -32,25 +32,24 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //활성 유저 데이터 자동 갱신
-        $schedule->call(function (){
-            $active = Redis::lrange('active', 0, -1);
-            $len = Redis::llen('active');
-            foreach ($active as $user) {
-                operator::getOperstors($user);
-                rank::getRank($user);
-            }
-            Log::info('active user auto refresh', $active);
-            LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')', 1);
-        })->hourly();
 
-        //현재 상위 순위
         $schedule->call(function (){
-            $rankMMR = Redis::zrevrange('rank:mmr', 0, 4);
-            $rankKD =  Redis::zrevrange('rank:kd', 0, 4);
-            LineNoti::send('TOP5 MMR '.implode(', ', $rankMMR), 1);
-            LineNoti::send('TOP5 K/D '.implode(', ', $rankKD), 1);
-        })->hourly();
+            //활성 유저 데이터 자동 갱신
+            // $active = Redis::lrange('active', 0, -1);
+            // $len = Redis::llen('active');
+            // foreach ($active as $user) {
+            //     operator::getOperstors($user);
+            //     rank::getRank($user);
+            // }
+            // Log::info('active user auto refresh', $active);
+            // LineNoti::send('활성 사용자 자동 갱신 수행 ('.$len.')', 1);
+            
+            // //현재 상위 순위
+            // $rankMMR = Redis::zrevrange('rank:mmr', 0, 4);
+            // $rankKD =  Redis::zrevrange('rank:kd', 0, 4);
+            // LineNoti::send('TOP5 MMR '.implode(', ', $rankMMR), 1);
+            // LineNoti::send('TOP5 K/D '.implode(', ', $rankKD), 1);
+        })->daily();
 
         //백그라운드에서 연산, 요청이 필요한 유저 처리
         $schedule->call(function () {

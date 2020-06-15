@@ -28,22 +28,20 @@
 <div class="container">
 <h1>api</h1>
 <div>
-<h5>특이사항</h5>
-<small>""</small>
+<h5>알림</h5>
+<p>cache : 1 캐시에서 가져옴 (없으면 갱신)</p>
+<p>cache : 0 갱신</p>
 <hr>
 </div>
     <div class="api"> 
         <p class="url">/get/id/</p>
         <p>닉네임으로 profile_id 조회</p>
-        <p>post에 json 으로 요청</p>
-        <p>cache : true 캐시에서 빠르게 불러옴(기본적으로 이 옵션 사용)</p>
-        <p>cache : false 갱신 시킴</p>
         <div class="form-inline">
             <div class="form-group">
                 <input class="form-control param" type="text" name="name" placeholder="name">
                 <input class="form-control param-2" type="text" name="cache" placeholder="cache">
             </div>
-            <button type="button" class="btn btn-success req-get-id">요청</button>
+            <button type="button" class="btn btn-success req">요청</button>
         </div>
         <p>response</p>
         <pre><div class="result"></div></pre>
@@ -54,6 +52,7 @@
         <div class="form-inline">
             <div class="form-group">
                 <input class="form-control param" type="text" placeholder="profile_id">
+                <input class="form-control param-2" type="text" name="cache" placeholder="cache">
             </div>
             <button type="button" class="btn btn-success req">요청</button>
         </div>
@@ -152,12 +151,12 @@
         request(url, dom);
     })
 
-    $('.req-get-id').on('click', (event)=>{ 
+    $('.req-2').on('click', (event)=>{ 
         let dom = $(event.target).parent().parent();
         $.ajax({
                 method: "POST",
                 url: BASE + dom.find('.url').text(),
-                data: { name: dom.find('.param').val(), cache: dom.find('.param-2').val() }
+                data: { key: dom.find('.param').val(), isCache: dom.find('.param-2').val() }
                 })
                 .done(function( result ) {
                     let test = JSON.stringify(result);

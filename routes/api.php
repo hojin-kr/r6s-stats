@@ -19,10 +19,25 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/get/profile/{profile_id}','profile@getProfile');
+//프로필
+Route::get('/get/profile/{key}/{isCache}','profile@getProfile');
+Route::post('/get/profile','profile@getProfile');
+//프로필아이디
+Route::get('/get/id/{key}/{isCache}','profile@getId');
 Route::post('/get/id','profile@getId');
-Route::get('/get/rank/{profile_id}','rank@getRank');
-Route::get('/get/operators/{profile_id}','operator@getOperstors');
-Route::get('/get/rank/list/{profile_id}/{start_timestamp}/{end_timestamp}','rank@getRankList');
-Route::get('/get/operators/list/{profile_id}/{start_timestamp}/{end_timestamp}','operator@getOperatorsList');
-Route::get('/get/season/all/{profile_id}','rank@getSeasonAll');
+//랭크정보
+Route::get('/get/rank/{key}','rank@getRank');
+Route::post('/get/rank','rank@getRank');
+//오퍼레이터정보
+Route::get('/get/operators/{key}','operator@getOperstors');
+Route::post('/get/operators','operator@getOperstors');
+//랭키리스트
+Route::get('/get/rank/list/{key}/{start_timestamp}/{end_timestamp}','rank@getRankList');
+Route::post('/get/rank/list','rank@getRankList');
+//오퍼레이터리스트
+Route::get('/get/operators/list/{key}/{start_timestamp}/{end_timestamp}','operator@getOperatorsList');
+Route::post('/get/operators/list','operator@getOperatorsList');
+//전체시즌
+Route::get('/get/season/all/{key}','rank@getSeasonAll');
+Route::post('/get/season/all','rank@getSeasonAll');
+

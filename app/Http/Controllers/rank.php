@@ -7,12 +7,14 @@ use App\LineNoti;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class rank extends Controller
 {
     //
-    public static function getRank($id) : array
+    public static function getRank(Request $request) : array
     {
+        ['key'=>$id] = $request;
         $redis = Redis::get('rank:'.$id);
         if ($redis !== null) {
             $raw = $redis;
@@ -62,8 +64,9 @@ class rank extends Controller
     }
 
     // DB에 저장된 유저의 랭크 리스트
-    public static function getRankList($id, $start, $end) 
+    public static function getRankList(Request $request) 
     {
+        ['key'=>$id, 'start_timestamp'=>$start, 'end_timestamp'=>$end] = $request;
         Log::info('Get RankList', ['id'=>$id, 'start'=>$start, 'end'=>$end]);
         return RankModel::getRankList($id, $start, $end);
     }
