@@ -23,7 +23,7 @@
             margin: 0.5em;
             background-color: rgba(41, 44, 51, .25);
             border-radius: 15px;
-            opacity: 0.85;
+            /* opacity: 0.85; */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -115,7 +115,7 @@
                 </div>
                 <div class="more" v-if="container.more != false">
                     <hr>
-                    <p class="btn">더보기</p>
+                    <p class="btn">more</p>
                 </div>
             </div>
         </div>
@@ -125,124 +125,121 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script type="application/javascript">
 var app = new Vue({
-            el: '#app',
-            data: {
-                containers: null,
-                nickname: '',
-                profileId: '',
+    el: '#app',
+    data: {
+        containers: null,
+        nickname: '',
+        profileId: '',
+    },
+    created: function () {
+        // `this` 는 vm 인스턴스를 가리킵니다.
+        this.containers = [{
+                title: 'Welcome ',
+                articles: [
+                    'Search your R6S nickname',
+                    'Your Rank and Operators Detail Info',
+                    'Monitoring and Management your Stats'
+                ],
+                more: true
             },
-            created: function () {
-                // `this` 는 vm 인스턴스를 가리킵니다.
-                this.containers = [{
-                        title: '레식 전적 검색',
-                        articles: [
-                            '아시아 계정의 닉네임을 검색',
-                            '나의 랭킹과 오퍼레이터별 정보를 확인',
-                            '지속 관리로 오퍼레이터별 변화를 모니터링'
-                        ],
-                        more: true
-                    },
-                    {
-                        title: '대회 정보',
-                        articles: [
-                            '레인보우식스 시즈 대회 정보',
-                            '[ 06/19 19:00 XXCUP XX MATCH ]',
-                            '[img] A TEAM VS B TEAM [img]',
-                            '[img] A TEAM VS B TEAM [img]'
-                        ],
-                        more: true
-                    },
-                    {
-                        title: '레식 뉴스',
-                        articles: [
-                            '레식 정보 가나다라마바사아차카타...',
-                            '레식 정보 가나다라마바사아차카타...',
-                            '레식 정보 가나다라마바사아차카타...',
-                        ],
-                        more: false
+            {
+                title: 'Contest Info',
+                articles: [
+                    '[ 06/19 19:00 XXCUP XX MATCH ]',
+                    '[img] A TEAM VS B TEAM [img]',
+                    '[img] A TEAM VS B TEAM [img]'
+                ],
+                more: true
+            },
+            {
+                title: 'News',
+                articles: [
+                    'article',
+                ],
+                more: false
+            }
+        ]
+    },
+    methods: {
+        search: function () {
+            $('body #content').html('');
+            $('.search > .progress').css('display', 'block');
+            $.ajax({
+                    method: "POST",
+                    url: "api/get/id",
+                    data: {
+                        key: this.nickname,
+                        isCache: 1
                     }
-                ]
-            },
-            methods: {
-                search: function () {
-                    $('body #content').html('');
-                    $('.search > .progress').css('display', 'block');
-                    $.ajax({
-                            method: "POST",
-                            url: "api/get/id",
-                            data: {
-                                key: this.nickname,
-                                isCache: 1
-                            }
-                        })
-                        .done(function (data) {
-                            app.containers = [];
-                            app.profileId = data.profile_id;
-                            app.getProfile();
-                            app.getRank();
-                            app.getOperators();
-                        });
-                },
-                getProfile: function () {
-                    $.ajax({
-                            method: "POST",
-                            url: "api/get/profile",
-                            data: {
-                                key: app.profileId,
-                                isCache: 1
-                            }
-                        })
-                        .done(function (data) {
-                            console.log(data);
-                            app.containers.push({
-                                title: data.nickname,
-                                articles: [data.level],
-                                more: false
-                            });
-                            $('.search > .progress').css('display', 'none');
-                        });
-                },
-                getRank: function () {
-                    $.ajax({
-                            method: "POST",
-                            url: "api/get/rank",
-                            data: {
-                                key: app.profileId,
-                                isCache: 1
-                            }
-                        })
-                        .done(function (data) {
-                            console.log(data);
-                            app.containers.push({
-                                title: "Rank" + data.rank,
-                                articles: ["MMR " + data.mmr, "SEASON " + data.season],
-                                more: true
-                            });
-                        });
-                },
-                getOperators: function () {
-                    $.ajax({
-                            method: "POST",
-                            url: "api/get/operators",
-                            data: {
-                                key: app.profileId,
-                                isCache: 1
-                            }
-                        })
-                        .done(function (data) {
-                            console.log(data);
-                            data.sort(function (a, b) {
-                                return b.timeplayed - a.timeplayed;
-                            });
-                            data.forEach((operator) => {
-                                app.containers.push({
-                                    title: operator.operator,
-                                    articles: [operator.roundwon, operator.roundlost, operator.kills, operator.death, operator.timeplayed],
-                                    more: true
-                                });
-                            });
-                        });
-                      }
-                  }
                 })
+                .done(function (data) {
+                    app.containers = [];
+                    app.profileId = data.profile_id;
+                    app.getProfile();
+                    app.getRank();
+                    app.getOperators();
+                });
+        },
+        getProfile: function () {
+            $.ajax({
+                    method: "POST",
+                    url: "api/get/profile",
+                    data: {
+                        key: app.profileId,
+                        isCache: 1
+                    }
+                })
+                .done(function (data) {
+                    console.log(data);
+                    app.containers.push({
+                        title: data.nickname,
+                        articles: ["LEVEL "+data.level],
+                        more: false
+                    });
+                    $('.search > .progress').css('display', 'none');
+                });
+        },
+        getRank: function () {
+            $.ajax({
+                    method: "POST",
+                    url: "api/get/rank",
+                    data: {
+                        key: app.profileId,
+                        isCache: 1
+                    }
+                })
+                .done(function (data) {
+                    console.log(data);
+                    app.containers.push({
+                        title: data.rank,
+                        articles: ["MMR " + data.mmr, "SEASON " + data.season],
+                        more: true
+                    });
+                });
+        },
+        getOperators: function () {
+            $.ajax({
+                    method: "POST",
+                    url: "api/get/operators",
+                    data: {
+                        key: app.profileId,
+                        isCache: 1
+                    }
+                })
+                .done(function (data) {
+                    console.log(data);
+                    data.sort(function (a, b) {
+                        return b.timeplayed - a.timeplayed;
+                    });
+                    data.forEach((operator) => {
+                        app.containers.push({
+                            title: operator.operator,
+                            articles: ["RoundWon " + operator.roundwon, "RoundLost "+operator.roundlost, "K/D "+(operator.kills/operator.death).toFixed(2), "PlayTime "+(operator.timeplayed/3600).toFixed(0)+" hour"],
+                            more: true
+                        });
+                    });
+                });
+        }
+    }
+})
 </script>
