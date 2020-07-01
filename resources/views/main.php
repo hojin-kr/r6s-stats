@@ -124,16 +124,12 @@
 </html>
 <!-- Step 1) Load D3.js -->
 <script src="https://d3js.org/d3.v5.min.js"></script>
-
 <!-- Step 2) Load billboard.js with style -->
 <script src="./js/billboard.js"></script>
-
 <!-- Load with base style -->
 <link rel="stylesheet" href="./js/billboard.css">
-
 <!-- Or load different theme style -->
 <link rel="stylesheet" href="./js/insight.min.css">
-     
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script type="application/javascript">
 const host = "http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/";
@@ -141,13 +137,15 @@ const host = "http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/";
 var app = new Vue({
     el: '#app',
     data: {
-        containers: [], 
+        containers: [],
         nickname: 'LE16_',
         profileId: '',
-        operatorsList : null,
+        operatorsList: null,
+        ranksList: null,
+        seasonAllList: null,
     },
     mounted: function () {
-            this.search();
+        this.search();
     },
     methods: {
         search: function () {
@@ -155,7 +153,7 @@ var app = new Vue({
             $('.search > .progress').css('display', 'block');
             $.ajax({
                     method: "POST",
-                    url: host+"api/get/id",
+                    url: host + "api/get/id",
                     data: {
                         key: this.nickname,
                         isCache: 1
@@ -168,12 +166,14 @@ var app = new Vue({
                     app.getRank();
                     app.getOperators();
                     app.getOperatorsList();
+                    app.getRanksList();
+                    app.getSeasonAll();
                 });
         },
         getProfile: function () {
             $.ajax({
                     method: "POST",
-                    url: host+"api/get/profile",
+                    url: host + "api/get/profile",
                     data: {
                         key: app.profileId,
                         isCache: 1
@@ -182,9 +182,9 @@ var app = new Vue({
                 .done(function (data) {
                     console.log(data);
                     app.containers.push({
-                        title: data.nickname,
-                        articles: ["LEVEL "+data.level],
-                        more: false
+                        title: "PROFILE",
+                        articles: [data.nickname, "LEVEL " + data.level],
+                        more: true
                     });
                     $('.search > .progress').css('display', 'none');
                 });
@@ -192,7 +192,7 @@ var app = new Vue({
         getRank: function () {
             $.ajax({
                     method: "POST",
-                    url: host+"api/get/rank",
+                    url: host + "api/get/rank",
                     data: {
                         key: app.profileId,
                         isCache: 1
@@ -201,16 +201,16 @@ var app = new Vue({
                 .done(function (data) {
                     console.log(data);
                     app.containers.push({
-                        title: data.rank,
-                        articles: ["MMR " + data.mmr, "SEASON " + data.season],
-                        more: false
+                        title: 'RANK',
+                        articles: [data.rank, "MMR " + data.mmr, "SEASON " + data.season],
+                        more: true
                     });
                 });
         },
         getOperators: function () {
             $.ajax({
                     method: "POST",
-                    url: host+"api/get/operators",
+                    url: host + "api/get/operators",
                     data: {
                         key: app.profileId,
                         isCache: 1
@@ -224,7 +224,7 @@ var app = new Vue({
                     data.forEach((operator) => {
                         app.containers.push({
                             title: operator.operator,
-                            articles: ["RoundWon " + operator.roundwon, "RoundLost "+operator.roundlost, "K/D "+(operator.kills/operator.death).toFixed(2), "PlayTime "+(operator.timeplayed/3600).toFixed(0)+" hour"],
+                            articles: ["RoundWon " + operator.roundwon, "RoundLost " + operator.roundlost, "K/D " + (operator.kills / operator.death).toFixed(2), "PlayTime " + (operator.timeplayed / 3600).toFixed(0) + " hour"],
                             more: true
                         });
                     });
@@ -233,43 +233,111 @@ var app = new Vue({
         getOperatorsList: function () {
             $.ajax({
                     method: "POST",
-                    url: host+"api/get/operators/list",
+                    url: host + "api/get/operators/list",
                     data: {
                         key: app.profileId,
-                        start_timestamp : 0,
-                        end_timestamp : Date.now(),
+                        start_timestamp: 0,
+                        end_timestamp: Date.now(),
                         isCache: 1
                     }
                 })
                 .done(function (data) {
-                  app.operatorsList = data;
+                    app.operatorsList = data;
                 });
-            },
-            more: function (event) { 
-                let title = event.target.id;
-                console.log(title);
-                let kd = ['K/D'];
-                let wl = ['W/L'];
-                  app.operatorsList.forEach((operators)=>{
-                    operators.forEach((operator)=>{
-                        if (operator.operator == title) {
-                            kd.push((operator['kills']/operator['death']).toFixed(2));
-                            wl.push((operator['roundwon']/operator['roundlost']).toFixed(2));
-                        }
+        },
+        getRanksList: function () {
+            $.ajax({
+                    method: "POST",
+                    url: host + "api/get/rank/list",
+                    data: {
+                        key: app.profileId,
+                        start_timestamp: 0,
+                        end_timestamp: Date.now(),
+                        isCache: 1
+                    }
+                })
+                .done(function (data) {
+                    app.ranksList = data;
+                });
+        },
+        getSeasonAll: function () {
+            $.ajax({
+                    method: "POST",
+                    url: host + "api/get/season/all",
+                    data: {
+                        key: app.profileId
+                    }
+                })
+                .done(function (data) {
+                    app.seasonAllList = JSON.parse(data);
+                });
+        },
+        more: function (event) {
+            let title = event.target.id;
+            let column = [];
+            let mmr = ['MMR'];
+            let kd = ['K/D'];
+            let wl = ['W/L'];
+            let seasons = ['Black Ice', 'Dust Line', 'Skull Rain', 'Red Crow', 'Velvet Shell', 'Health', 'Blood Orchid', 
+        'White Noise', 'Chimera', 'Para Bellum', 'Grim Sky', 'Wind Bastion', 'Burnt Horizon', 'Phantom Sight'
+        ,'Ember Rise', 'Shifting Tides', 'Void Edge'];
+            switch(title){
+                case 'RANK':
+                app.ranksList.forEach((ranks) => {
+                    let data = JSON.parse(ranks.data)['players'][ranks.profile_id];
+                    if (mmr.length < 10) {
+                        mmr.push(data.mmr);
+                    }
+                })
+                column.push(mmr);
+                var chart = bb.generate({
+                    bindto: "#" + title,
+                    data: {
+                        type: "area-spline",
+                        columns: column
+                    }
+                });
+                    break;
+                case 'PROFILE':
+                    seasons.forEach((season)=>{
+                        mmr.push(app.seasonAllList[season].mmr);
                     })
-                  })
-                  var chart = bb.generate({
-                      bindto: "#" + title,
-                      data: {
-                          type: "area-spline",
-                          columns: [
-                              kd,
-                              wl
-                          ]
-                      }
-                  });
-                  }
-          
-      }
+                    column.push(mmr);
+                    var chart = bb.generate({
+                    bindto: "#" + title,
+                    data: {
+                        type: "area-spline",
+                        columns: column
+                    },
+                    axis: {
+                    x: {
+                    type: "category",
+                    categories: seasons
+                    }
+                }
+            });
+                    break;
+                default:
+                app.operatorsList.forEach((operators) => {
+                    operators.forEach((operator) => {
+                        if (operator.operator == title) {
+                            kd.push((operator['kills'] / operator['death']).toFixed(2));
+                            wl.push((operator['roundwon'] / operator['roundlost']).toFixed(2));
+                        }
+                    })  
+                })
+                column.push(kd);
+                column.push(wl);
+                var chart = bb.generate({
+                    bindto: "#" + title,
+                    data: {
+                        type: "area-spline",
+                        columns: column
+                    }
+            });
+                    break;
+            }
+        }
+    }
 })
 </script>

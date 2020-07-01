@@ -54,8 +54,9 @@ class rank extends Controller
     }
 
     //전체 시즌 정보
-    public function getSeasonAll($id)
+    public function getSeasonAll(Request $request)
     {
+        ['key'=>$id] = $request;
         $data = Redis::get('seasonAll:'.$id);
         if (!empty($data)) {
             return $data;
@@ -91,15 +92,15 @@ class rank extends Controller
                     Log::error('seasonAllRenew Error', 1);
                     LineNoti::send($id.':전체시즌 정보 갱신 에러', 1);
                 }
-                $seasonEach[$key + 1]['rank'] = $data['players']['rankInfo']['name'];
-                $seasonEach[$key + 1]['mmr'] = $data['players']['mmr'];
-                $seasonEach[$key + 1]['max_mmr'] = $data['players']['max_mmr'];
-                $seasonEach[$key + 1]['wins'] = $data['players']['wins'];
-                $seasonEach[$key + 1]['looses'] = $data['players']['losses'];
-                $seasonEach[$key + 1]['kills'] = $data['players']['kills'];
-                $seasonEach[$key + 1]['death'] = $data['players']['deaths'];
-                $seasonEach[$key + 1]['season'] = $data['players']['season'];
-                $seasonEach[$key + 1]['season_name'] = $value;
+                $seasonEach[$value]['rank'] = $data['players']['rankInfo']['name'];
+                $seasonEach[$value]['mmr'] = $data['players']['mmr'];
+                $seasonEach[$value]['max_mmr'] = $data['players']['max_mmr'];
+                $seasonEach[$value]['wins'] = $data['players']['wins'];
+                $seasonEach[$value]['looses'] = $data['players']['losses'];
+                $seasonEach[$value]['kills'] = $data['players']['kills'];
+                $seasonEach[$value]['death'] = $data['players']['deaths'];
+                $seasonEach[$value]['season'] = $data['players']['season'];
+                $seasonEach[$value]['season_name'] = $value;
             }
             Redis::set('seasonAll:'.$id, json_encode($seasonEach), 'EX', static::REDIS_EXPIRE_LONG);
             LineNoti::send($id.':전체시즌 정보 갱신 완료', 1);
