@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=0"">
-    <link href="https://fonts.googleapis.com/css?family=Francois+One&display=swap" rel="stylesheet">
+    <link href=" https://fonts.googleapis.com/css?family=Francois+One&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.js"
         integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
     <title>r6s</title>
@@ -96,9 +96,6 @@
             text-decoration: none;
             color: inherit;
         }
-        .bb-tooltip-container {
-            color: black;
-        }
     </style>
 </head>
 
@@ -115,39 +112,52 @@
                 </div>
                 <div class="more" v-if="container.more != false">
                     <hr>
-                    <div v-bind:id="container.title" v-on:click="more">more</div>
+                    <p class="btn" v-on:click="more">more</p>
                 </div>
             </div>
         </div>
     </div>
 </body>
 </html>
-<!-- Step 1) Load D3.js -->
-<script src="https://d3js.org/d3.v5.min.js"></script>
-
-<!-- Step 2) Load billboard.js with style -->
-<script src="./js/billboard.js"></script>
-
-<!-- Load with base style -->
-<link rel="stylesheet" href="./js/billboard.css">
-
-<!-- Or load different theme style -->
-<link rel="stylesheet" href="./js/insight.min.css">
-     
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script type="application/javascript">
-const host = "http://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/";
-
+const host = "https://ec2-13-209-98-115.ap-northeast-2.compute.amazonaws.com/";
 var app = new Vue({
     el: '#app',
     data: {
-        containers: [], 
-        nickname: 'LE16_',
+        containers: null, 
+        nickname: '',
         profileId: '',
         operatorsList : null,
     },
-    mounted: function () {
-            this.search();
+    created: function () {
+        // `this` 는 vm 인스턴스를 가리킵니다.
+        this.containers = [{
+                title: 'Welcome ',
+                articles: [
+                    'Search your R6S nickname',
+                    'Your Rank and Operators Detail Info',
+                    'Monitoring and Management your Stats'
+                ],
+                more: true
+            },
+            {
+                title: 'Contest Info',
+                articles: [
+                    '[ 06/19 19:00 XXCUP XX MATCH ]',
+                    '[img] A TEAM VS B TEAM [img]',
+                    '[img] A TEAM VS B TEAM [img]'
+                ],
+                more: true
+            },
+            {
+                title: 'News',
+                articles: [
+                    'article',
+                ],
+                more: false
+            }
+        ]
     },
     methods: {
         search: function () {
@@ -203,7 +213,7 @@ var app = new Vue({
                     app.containers.push({
                         title: data.rank,
                         articles: ["MMR " + data.mmr, "SEASON " + data.season],
-                        more: false
+                        more: true
                     });
                 });
         },
@@ -245,30 +255,9 @@ var app = new Vue({
                   app.operatorsList = data;
                 });
             },
-            more: function (event) { 
-                let title = event.target.id;
-                console.log(title);
-                let kd = ['K/D'];
-                let wl = ['W/L'];
-                  app.operatorsList.forEach((operators)=>{
-                    operators.forEach((operator)=>{
-                        if (operator.operator == title) {
-                            kd.push((operator['kills']/operator['death']).toFixed(2));
-                            wl.push((operator['roundwon']/operator['roundlost']).toFixed(2));
-                        }
-                    })
-                  })
-                  var chart = bb.generate({
-                      bindto: "#" + title,
-                      data: {
-                          type: "area-spline",
-                          columns: [
-                              kd,
-                              wl
-                          ]
-                      }
-                  });
-                  }
+            more: function () {
+              alert('more');
+            }
           
       }
 })
